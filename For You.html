@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>For You 💖</title>
+<style>
+:root{--bg1:#ffe3ee;--bg2:#ffc2d9;--card:#fff;--text:#7a1f45;--accent:#ff4f8b;--accent2:#d6336c;--no:#9aa0b4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#2a1020;--bg2:#4a1a35;--card:#3a1630;--text:#ffd6e7;--accent:#ff5c95;--accent2:#ff8db5;--no:#8a8fa6}}
+:root[data-theme="dark"]{--bg1:#2a1020;--bg2:#4a1a35;--card:#3a1630;--text:#ffd6e7;--accent:#ff5c95;--accent2:#ff8db5;--no:#8a8fa6}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--text);font-family:"Poppins","Segoe UI",system-ui,sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card{background:var(--card);border-radius:28px;padding:2rem 1.5rem;width:min(92vw,440px);max-height:94%;text-align:center;box-shadow:0 12px 40px rgba(255,79,139,.3);animation:pop .5s ease;display:flex;flex-direction:column;align-items:center;gap:1.4rem;overflow-y:auto}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+h1{font-size:2rem;margin:0;line-height:1.25}
+.emoji{font-size:3.5rem;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.btns{display:flex;gap:1rem;align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
+button{font-family:inherit;font-weight:600;border:none;border-radius:999px;cursor:pointer;transition:all .3s ease;color:#fff}
+.yes,.go{background:linear-gradient(135deg,var(--accent),var(--accent2));padding:.9em 1.8em;font-size:1.15rem;box-shadow:0 6px 18px rgba(255,79,139,.4)}
+.no{background:var(--no);padding:.8em 1.6em;font-size:1rem}
+button:active{transform:scale(.96)}
+.heart{position:fixed;top:-40px;font-size:1.6rem;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card" id="card"></div>
+<script>
+var step=0,noCount=0;
+var card=document.getElementById('card');
+var ac;
+function beep(f,t,d,vol,type){
+  var o=ac.createOscillator(),g=ac.createGain();
+  o.type=type||'sine';o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(vol,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+0.05);
+}
+function clickSound(cls){
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    ac.resume();
+    var t=ac.currentTime;
+    if(cls.indexOf('no')>-1){beep(330,t,0.16,0.12,'triangle');beep(247,t+0.09,0.2,0.1,'triangle');}
+    else{beep(660,t,0.14,0.12);beep(880,t+0.08,0.2,0.1);}
+  }catch(e){}
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('button');
+  if(b)clickSound(b.className||'');
+},true);
+
+function render(){
+  if(step===0){
+    card.innerHTML='<div class="emoji">👋</div><h1>HI cutie 💕</h1><div class="btns"><button class="go" id="next">Hello</button></div>';
+    document.getElementById('next').onclick=function(){step=1;render()};
+  }else if(step===1){
+    card.innerHTML='<div class="emoji">🥰</div><h1>You are so cute</h1><div class="btns"><button class="go" id="next">Thank you</button></div>';
+    document.getElementById('next').onclick=function(){step=2;render()};
+  }else if(step===2){
+    card.innerHTML='<div class="emoji">💘</div><h1>Can I be your boyfriend?</h1><div class="btns"><button class="yes" id="yes">Yes</button><button class="no" id="no">No</button></div>';
+    document.getElementById('yes').onclick=celebrate;
+    document.getElementById('no').onclick=function(){noCount=1;step=3;render()};
+  }else if(step===3){
+    var L=Math.min(noCount,5);
+    var yesSize=Math.min(1.15+noCount*0.55,9);
+    var noSize=Math.max(1-noCount*0.15,0.3);
+    var sad=['🥺😭','😭😭😭','😿💔😭','🥹😭🥺💔','😭💔😭💔😭'];
+    var msgs=['Please… 🥺<br>pretty please? 😭💔','Why are you doing this to me? 😭<br>I will be so good to you, I promise 🥺','My heart is breaking… 💔😭<br>I can’t imagine my days without you…','I’m crying so much now 😭😭<br>You’re the only one I want, please say yes 🥹💔','There is no “No” anymore… 😭💖<br>I love you so much. Please, please say yes… 🥺💞'];
+    card.innerHTML='<div class="emoji">'+sad[L-1]+'</div><h1 style="font-size:'+(1.7+L*0.08)+'rem">'+msgs[L-1]+'</h1><div class="btns"><button class="yes" id="yes">Yes</button>'+(noCount<5?'<button class="no" id="no">No</button>':'')+'</div>';
+    var y=document.getElementById('yes'),n=document.getElementById('no');
+    y.style.fontSize=yesSize+'rem';
+    y.style.maxWidth='100%';
+    y.onclick=celebrate;
+    if(n){
+      n.style.fontSize=noSize+'rem';
+      n.style.padding=(0.8*noSize)+'em '+(1.6*noSize)+'em';
+      n.onclick=function(){noCount++;render()};
+    }
+    if(noCount>1)card.style.animation='none';
+  }else{
+    card.innerHTML='<div class="emoji">🎉💖🎉</div><h1>YAYYY! 🥳<br>She said YES!</h1><div style="text-align:left;font-size:1.02rem;line-height:1.65;display:flex;flex-direction:column;gap:.9rem"><p style="margin:0">There is so much to do in this life, so many movies to watch, so many languages to learn, so many instruments to play, so many places to visit. I want you in those every moment. 🎬🎸✈️</p><p style="margin:0">You will be everywhere in my life, in my poetries, in my books, in my victories, in my worst and best. 📚✨</p><p style="margin:0">I can promise you a world where you will always be happy, always be my darling. My love is only made for you, and only you deserve it. 💖</p><p style="margin:0;text-align:center;font-weight:600">I love you ❤️</p></div>';
+    hearts();
+  }
+}
+function celebrate(){step=4;render()}
+function hearts(){
+  var list=['💖','💕','💗','🎉','✨','💘','🥰'];
+  var count=0;
+  var t=setInterval(function(){
+    var h=document.createElement('div');
+    h.className='heart';
+    h.textContent=list[Math.floor(Math.random()*list.length)];
+    h.style.left=Math.random()*100+'vw';
+    h.style.animationDuration=(3+Math.random()*3)+'s';
+    h.style.fontSize=(1+Math.random()*1.8)+'rem';
+    document.body.appendChild(h);
+    setTimeout(function(){h.remove()},6500);
+    if(++count>400)clearInterval(t);
+  },120);
+}
+render();
+</script>
+</body>
+</html>
